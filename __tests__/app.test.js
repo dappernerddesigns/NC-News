@@ -38,7 +38,7 @@ describe("GET /topics/", () => {
   });
 });
 describe("404 Not a route", () => {
-  test("Server responds with a 404 for any incorrect route", async () => {
+  test("404: Server responds with a 404 for any incorrect route", async () => {
     const error = await request(app).get("/api/not-a-route").expect(404);
   });
 });
@@ -106,5 +106,51 @@ describe("GET /api/articles", () => {
     expect(articles).toBeSortedBy("created_at", {
       descending: true,
     });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Server responds with an array of comment objects with the correct keys", async () => {
+    const {
+      body: { comments },
+    } = await request(app).get("/api/articles/1/comments").expect(200);
+
+    expect(comments.length).toBeGreaterThan(1);
+    comments.forEach((comment) => {
+      expect(comment).toEqual(
+        expect.objectContaining({
+          article_id: 1,
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+        })
+      );
+    });
+  });
+  test("200: Server responds with an array of comments in order of newest first", async () => {
+    const {
+      body: { comments },
+    } = await request(app).get("/api/articles/1/comments").expect(200);
+    expect(comments).toBeSortedBy("created_at", { descending: true });
+  });
+  test("200: Server responds with an empty array when given a valid article_id in the database with no comments", async () => {
+    const {
+      body: { comments },
+    } = await request(app).get("/api/articles/2/comments").expect(200);
+    expect(comments).toEqual([]);
+  });
+  test("404: Server responds with a 404 for a valid article_id that does not exist in the database", async () => {
+    const {
+      body: { msg },
+    } = await request(app).get("/api/articles/999/comments").expect(404);
+    expect(msg).toBe("Resource not found");
+  });
+  test("400: Server responds with a 400 for an invalid article id", async () => {
+    const {
+      body: { msg },
+    } = await request(app).get("/api/articles/comments/comments").expect(400);
+    expect(msg).toBe("Invalid input");
   });
 });
