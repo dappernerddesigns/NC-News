@@ -11,3 +11,12 @@ exports.fetchArticle = async (id) => {
     return rows;
   }
 };
+
+exports.fetchAllArticles = async () => {
+  const { rows } = await db.query(
+    `select a.article_id, a.title, a.topic, a.author, a.created_at, a.votes, a.article_img_url, count(c.comment_id)::int as comment_count from articles a
+    left join comments c on a.article_id = c.article_id group by a.article_id order by a.created_at desc`
+  );
+  console.log(rows);
+  return rows;
+};
