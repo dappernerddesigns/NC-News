@@ -38,6 +38,26 @@ describe("404 Not a route", () => {
   test("Server responds with a 404 for any incorrect route", async () => {
     const error = await request(app).get("/api/not-a-route");
     expect(error.status).toBe(404);
-    console.log(Object.keys(error));
+  });
+});
+
+describe("GET /articles/:article", () => {
+  test("200: Server responds with an article object", async () => {
+    const articleResponse = await request(app).get("/api/articles/1");
+    const { article } = articleResponse.body;
+
+    expect(article[0]).toEqual(
+      expect.objectContaining({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: expect.any(String),
+        votes: 100,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      })
+    );
   });
 });
