@@ -13,16 +13,19 @@ afterAll(() => {
 
 describe("Server Status", () => {
   test("200: Responds with a message that the server is running ok", async () => {
-    const serverMessage = await request(app).get("/api/").expect(200);
-    const { msg } = serverMessage.body;
+    const {
+      body: { msg },
+    } = await request(app).get("/api/").expect(200);
+
     expect(msg).toBe("Server Running ok");
   });
 });
 
 describe("GET /topics/", () => {
   test("200: Server responds with an array of topic objects", async () => {
-    const topicArray = await request(app).get("/api/topics").expect(200);
-    const { topics } = topicArray.body;
+    const {
+      body: { topics },
+    } = await request(app).get("/api/topics").expect(200);
     expect(topics.length).toBeGreaterThan(1);
     topics.forEach((topic) => {
       expect(topic).toEqual(
@@ -42,10 +45,9 @@ describe("404 Not a route", () => {
 
 describe("GET /articles/:article", () => {
   test("200: Server responds with an article object", async () => {
-    const articleResponse = await request(app)
-      .get("/api/articles/1")
-      .expect(200);
-    const { article } = articleResponse.body;
+    const {
+      body: { article },
+    } = await request(app).get("/api/articles/1").expect(200);
 
     expect(article[0]).toEqual(
       expect.objectContaining({
@@ -62,10 +64,15 @@ describe("GET /articles/:article", () => {
     );
   });
   test("404: Server responds with a 404 when given a valid article_id but no matching article in db", async () => {
-    const errorResponse = await request(app)
-      .get("/api/articles/999")
-      .expect(404);
-    const { msg } = errorResponse.body;
+    const {
+      body: { msg },
+    } = await request(app).get("/api/articles/999").expect(404);
     expect(msg).toBe("Article not found");
+  });
+  test("400: Server responds with a 400 when passed an article_id that is not a number", async () => {
+    const {
+      body: { msg },
+    } = await request(app).get("/api/articles/bananas").expect(400);
+    expect(msg).toBe("Invalid input");
   });
 });
