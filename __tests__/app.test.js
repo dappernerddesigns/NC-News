@@ -13,7 +13,7 @@ afterAll(() => {
 
 describe("Server Status", () => {
   test("200: Responds with a message that the server is running ok", async () => {
-    const serverMessage = await request(app).get("/api/");
+    const serverMessage = await request(app).get("/api/").expect(200);
     const { msg } = serverMessage.body;
     expect(msg).toBe("Server Running ok");
   });
@@ -21,7 +21,7 @@ describe("Server Status", () => {
 
 describe("GET /topics/", () => {
   test("200: Server responds with an array of topic objects", async () => {
-    const topicArray = await request(app).get("/api/topics");
+    const topicArray = await request(app).get("/api/topics").expect(200);
     const { topics } = topicArray.body;
     expect(topics.length).toBeGreaterThan(1);
     topics.forEach((topic) => {
@@ -36,14 +36,15 @@ describe("GET /topics/", () => {
 });
 describe("404 Not a route", () => {
   test("Server responds with a 404 for any incorrect route", async () => {
-    const error = await request(app).get("/api/not-a-route");
-    expect(error.status).toBe(404);
+    const error = await request(app).get("/api/not-a-route").expect(404);
   });
 });
 
 describe("GET /articles/:article", () => {
   test("200: Server responds with an article object", async () => {
-    const articleResponse = await request(app).get("/api/articles/1");
+    const articleResponse = await request(app)
+      .get("/api/articles/1")
+      .expect(200);
     const { article } = articleResponse.body;
 
     expect(article[0]).toEqual(
@@ -59,5 +60,12 @@ describe("GET /articles/:article", () => {
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       })
     );
+  });
+  test("404: Server responds with a 404 when given a valid article_id but no matching article in db", async () => {
+    const errorResponse = await request(app)
+      .get("/api/articles/999")
+      .expect(404);
+    const { msg } = errorResponse.body;
+    expect(msg).toBe("Article not found");
   });
 });
