@@ -3,6 +3,7 @@ const {
   fetchAllArticles,
   fetchCommentsById,
   sendComment,
+  updateArticle,
 } = require("../models/articles.models");
 
 exports.getArticleById = async (req, res, next) => {
@@ -40,6 +41,17 @@ exports.postCommentById = async (req, res, next) => {
     const { username, body } = req.body;
     const comment = await sendComment(article_id, username, body);
     res.status(201).send({ comment });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.patchArticleById = async (req, res, next) => {
+  try {
+    const { article_id } = req.params;
+    const { inc_votes } = req.body;
+    const article = await updateArticle(article_id, inc_votes);
+    res.status(200).send({ article });
   } catch (err) {
     next(err);
   }

@@ -226,3 +226,102 @@ describe("POST /api/articles:article_id/comments", () => {
     expect(comment).not.toHaveProperty("extraKey");
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: Server responds with an updated article with positive votes patched", async () => {
+    const {
+      body: { article },
+    } = await request(app)
+      .patch("/api/articles/2")
+      .send({ inc_votes: 2 })
+      .expect(200);
+
+    expect(article).toEqual(
+      expect.objectContaining({
+        article_id: 2,
+        votes: 2,
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        created_at: expect.any(String),
+        article_img_url: expect.any(String),
+      })
+    );
+  });
+  test("200: Server responds with an updated article with negative votes patched", async () => {
+    const {
+      body: { article },
+    } = await request(app)
+      .patch("/api/articles/2")
+      .send({ inc_votes: -1 })
+      .expect(200);
+
+    expect(article).toEqual(
+      expect.objectContaining({
+        article_id: 2,
+        votes: -1,
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        created_at: expect.any(String),
+        article_img_url: expect.any(String),
+      })
+    );
+  });
+  test("200: Server responds with an updated article with votes patched and ignores extra keys", async () => {
+    const {
+      body: { article },
+    } = await request(app)
+      .patch("/api/articles/2")
+      .send({ inc_votes: -1, key: "value" })
+      .expect(200);
+
+    expect(article).toEqual(
+      expect.objectContaining({
+        article_id: 2,
+        votes: -1,
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        created_at: expect.any(String),
+        article_img_url: expect.any(String),
+      })
+    );
+  });
+  test("404: Server responds with a 404 when patching a valid id with no article", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .patch("/api/articles/999")
+      .send({ inc_votes: 1 })
+      .expect(404);
+    expect(msg).toBe("Article not found");
+  });
+  test("400: Server responds with a 400 for an invalid id", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .patch("/api/articles/bananas")
+      .send({ inc_votes: 1 })
+      .expect(400);
+    expect(msg).toBe("Invalid input");
+  });
+  test("400: Server responds with a 400 for an empty object", async () => {
+    const {
+      body: { msg },
+    } = await request(app).patch("/api/articles/1").send({}).expect(400);
+    expect(msg).toBe("Invalid input");
+  });
+  test("400: Server responds with a 400 for a badly formed object", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .patch("/api/articles/1")
+      .send({ key: "value" })
+      .expect(400);
+    expect(msg).toBe("Invalid input");
+  });
+});
