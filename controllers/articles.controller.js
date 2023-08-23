@@ -2,6 +2,7 @@ const {
   fetchArticle,
   fetchAllArticles,
   fetchCommentsById,
+  sendComment,
 } = require("../models/articles.models");
 
 exports.getArticleById = async (req, res, next) => {
@@ -28,6 +29,17 @@ exports.getCommentsById = async (req, res, next) => {
     const { article_id } = req.params;
     const comments = await fetchCommentsById(article_id);
     res.status(200).send({ comments });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCommentById = async (req, res, next) => {
+  try {
+    const { article_id } = req.params;
+    const { username, body } = req.body;
+    const comment = await sendComment(article_id, username, body);
+    res.status(201).send({ comment });
   } catch (err) {
     next(err);
   }

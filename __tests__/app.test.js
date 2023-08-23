@@ -154,3 +154,75 @@ describe("GET /api/articles/:article_id/comments", () => {
     expect(msg).toBe("Invalid input");
   });
 });
+
+describe("POST /api/articles:article_id/comments", () => {
+  test("201: Server responds with the newly posted comment", async () => {
+    const {
+      body: { comment },
+    } = await request(app)
+      .post("/api/articles/2/comments")
+      .send({ username: "lurker", body: "Fake news" })
+      .expect(201);
+
+    expect(comment).toEqual(
+      expect.objectContaining({
+        comment_id: expect.any(Number),
+        article_id: 2,
+        author: "lurker",
+        body: "Fake news",
+        votes: 0,
+        created_at: expect.any(String),
+      })
+    );
+  });
+  test("404: Server responds with a 404 when posting to a valid id that has no article", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .post("/api/articles/999/comments")
+      .send({ username: "lurker", body: "Fake news" })
+      .expect(404);
+
+    expect(msg).toBe("Resource not found");
+  });
+  test("400: Server responds with a 400 when posting to an invalid article id", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .post("/api/articles/mystery/comments")
+      .send({ username: "lurker", body: "Fake news" })
+      .expect(400);
+
+    expect(msg).toBe("Invalid input");
+  });
+  test("400: Server responds with a 400 when passed an empty comment object", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .post("/api/articles/2/comments")
+      .send({})
+      .expect(400);
+
+    expect(msg).toBe("Invalid input");
+  });
+  test("404: Server responds with a 404 when passed a user that does not exist", async () => {
+    const {
+      body: { msg },
+    } = await request(app)
+      .post("/api/articles/2/comments")
+      .send({ username: "verity", body: "Fake news" })
+      .expect(404);
+
+    expect(msg).toBe("Resource not found");
+  });
+  test("201: Server ignores extra keys on comment", async () => {
+    const {
+      body: { comment },
+    } = await request(app)
+      .post("/api/articles/1/comments")
+      .send({ username: "lurker", body: "fake news", extraKey: "not needed" })
+      .expect(201);
+
+    expect(comment).not.toHaveProperty("extraKey");
+  });
+});
