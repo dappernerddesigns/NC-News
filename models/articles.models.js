@@ -30,3 +30,13 @@ exports.fetchCommentsById = async (id) => {
   ]);
   return rows;
 };
+
+exports.sendComment = async (id, user, comment) => {
+  const queryStr = `insert into comments(body, article_id, author) values ($1,$2,$3) returning *`;
+  const [_, { rows }] = await Promise.all([
+    checkExists("articles", "article_id", id),
+    db.query(queryStr, [comment, id, user]),
+  ]);
+
+  return rows[0];
+};
