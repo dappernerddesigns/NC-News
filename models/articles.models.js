@@ -40,3 +40,12 @@ exports.sendComment = async (id, user, comment) => {
 
   return rows[0];
 };
+
+exports.updateArticle = async (id, votes) => {
+  const queryStr = `update articles set votes = votes + $1 where article_id = $2 returning *`;
+  const { rows } = await db.query(queryStr, [votes, id]);
+  if (rows.length === 0) {
+    return Promise.reject({ status: 404, msg: "Article not found" });
+  }
+  return rows[0];
+};
