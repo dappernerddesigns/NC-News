@@ -343,3 +343,21 @@ describe("DELETE /api/comments/:comment_id", () => {
     expect(msg).toBe("Invalid input");
   });
 });
+
+describe("GET /api/users", () => {
+  test("200: Server responds with an array of user objects", async () => {
+    const {
+      body: { users },
+    } = await request(app).get("/api/users").expect(200);
+    expect(users.length).toBeGreaterThan(1);
+    users.forEach((user) => {
+      expect(user).toEqual(
+        expect.objectContaining({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        })
+      );
+    });
+  });
+});
