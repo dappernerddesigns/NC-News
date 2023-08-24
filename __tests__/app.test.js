@@ -325,3 +325,21 @@ describe("PATCH /api/articles/:article_id", () => {
     expect(msg).toBe("Invalid input");
   });
 });
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: Server responds with a 204 and no content when given a comment valid id", async () => {
+    const result = await request(app).delete("/api/comments/1").expect(204);
+  });
+  test("404: Server responds with a 404 when passed a valid id that is not in the database", async () => {
+    const {
+      body: { msg },
+    } = await request(app).delete("/api/comments/999").expect(404);
+    expect(msg).toBe("Comment not found");
+  });
+  test("400: Server responds with a 400 for an invalid comment id", async () => {
+    const {
+      body: { msg },
+    } = await request(app).delete("/api/comments/banana").expect(400);
+    expect(msg).toBe("Invalid input");
+  });
+});
